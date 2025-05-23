@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Energy Drain Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: white;
+    color: black;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+  }
+  #quiz-container {
+    max-width: 480px;
+    width: 100%;
+  }
+  h1, h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    margin-top: 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 24px;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+  }
+  .btn-primary {
+    background-color: black;
+    color: white;
+    width: 100%;
+  }
+  .btn-option {
+    background-color: #f3f3f3;
+    color: black;
+    border: 2px solid black;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .btn-option.selected {
+    background-color: black;
+    color: white;
+  }
+  #buttons-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+  #back-btn {
+    background-color: #ccc;
+    color: black;
+    padding: 12px 24px;
+    border-radius: 24px;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+  }
+  #back-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  #next-btn {
+    background-color: black;
+    color: white;
+    width: 100%;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  #next-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  #final-message {
+    white-space: pre-line;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+</style>
+</head>
+<body>
+  <div id="quiz-container">
+    <div id="start-screen">
+      <h1>WHAT’S DRAINING YOUR ENERGY?</h1>
+      <p style="font-weight:700; font-size:1.25rem; text-align:center; margin-bottom:1.5rem;">
+        🌿 This will take just 2 minutes. Tap the answers that feel most true to you. No typing required.
+      </p>
+      <button id="start-btn" class="btn btn-primary">Start the Quiz</button>
+    </div>
+
+    <div id="question-screen" style="display:none;">
+      <div style="display:flex; align-items:center; margin-bottom: 1rem;">
+        <button id="back-btn" disabled>Back</button>
+        <h2 id="question-text" style="flex-grow:1; margin-left: 1rem;"></h2>
+      </div>
+      <div id="options-container"></div>
+      <button id="next-btn" disabled>Next</button>
+    </div>
+
+    <div id="final-screen" style="display:none; text-align:center;">
+      <p id="final-message"></p>
+      <button id="get-results-btn" class="btn btn-primary">Get my results</button>
+    </div>
+  </div>
+
+<script>
+  const questions = [
+    {
+      question: "What’s your gender?",
+      options: ["Male", "Female", "Prefer not to say"],
+      scores: [0, 0, 0],
+      types: ["none", "none", "none"],
+    },
+    {
+      question: "What’s your age group?",
+      options: ["Under 18", "18–24", "25–34", "35–44", "45+"],
+      scores: [0, 0, 0, 0, 0],
+      types: ["none", "none", "none", "none", "none"],
+    },
+    {
+      question: "How do you usually feel by the end of the day?",
+      options: [
+        "Exhausted but can't sleep",
+        "Emotionally numb",
+        "Wired and restless",
+        "Just going through the motions",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Overthinker", "Dreamer", "Giver", "Weightlifter"],
+    },
+    {
+      question: "What thought comes up most often in your head lately?",
+      options: [
+        "I should be doing more",
+        "No one sees how much I do",
+        "I just want peace",
+        "I don’t know what I want anymore",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Overthinker", "Giver", "Weightlifter", "Dreamer"],
+    },
+    {
+      question: "How do you usually respond when someone asks for a favour?",
+      options: [
+        "Say yes even if it’s too much",
+        "Say yes then feel drained",
+        "Avoid responding",
+        "Get annoyed but still say yes",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Giver", "Giver", "Dreamer", "Weightlifter"],
+    },
+    {
+      question: "How do you recharge?",
+      options: [
+        "Watching shows",
+        "Being alone in silence",
+        "Talking to someone close",
+        "I don’t remember the last time I recharged",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Dreamer", "Overthinker", "Giver", "Weightlifter"],
+    },
+    {
+      question: "What makes you cry or want to cry lately?",
+      options: [
+        "Feeling misunderstood",
+        "Having no control",
+        "Being overwhelmed",
+        "Feeling empty",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Giver", "Overthinker", "Weightlifter", "Dreamer"],
+    },
+    {
+      question: "If someone gave you a free hour, how would you use it?",
+      options: [
+        "Sleep",
+        "A real talk with someone",
+        "A walk in silence",
+        "Time alone with no expectations",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Weightlifter", "Giver", "Overthinker", "Dreamer"],
+    },
+    {
+      question: "How often do you feel like you're pretending to be okay?",
+      options: ["All the time", "Often", "Rarely", "I don't even know anymore"],
+      scores: [1, 1, 1, 1],
+      types: ["Giver", "Dreamer", "Overthinker", "Weightlifter"],
+    },
+    {
+      question: "What do you need but rarely give yourself?",
+      options: ["Rest", "Boundaries", "Validation", "Space to feel"],
+      scores: [1, 1, 1, 1],
+      types: ["Weightlifter", "Giver", "Dreamer", "Overthinker"],
+    },
+    {
+      question: "When you're alone, how does it feel?",
+      options: [
+        "I panic or overthink",
+        "I finally breathe",
+        "I distract myself",
+        "I feel numb",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Overthinker", "Giver", "Dreamer", "Weightlifter"],
+    },
+    {
+      question: "What keeps you up at night?",
+      options: [
+        "Thoughts spinning",
+        "Guilt or regret",
+        "The next day",
+        "Just feeling empty",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Overthinker", "Giver", "Weightlifter", "Dreamer"],
+    },
+    {
+      question: "When you hear “take care of yourself,” what do you feel?",
+      options: ["Guilt", "Confusion", "Resistance", "Longing"],
+      scores: [1, 1, 1, 1],
+      types: ["Giver", "Dreamer", "Weightlifter", "Overthinker"],
+    },
+    {
+      question: "Which of these do you miss the most?",
+      options: ["Feeling excited", "Feeling seen", "Feeling safe", "Feeling light"],
+      scores: [1, 1, 1, 1],
+      types: ["Dreamer", "Giver", "Weightlifter", "Overthinker"],
+    },
+    {
+      question: "How would you describe your current mood in one word?",
+      options: ["Tired", "Heavy", "On edge", "Lost"],
+      scores: [1, 1, 1, 1],
+      types: ["Weightlifter", "Dreamer", "Overthinker", "Giver"],
+    },
+    {
+      question: "What do you do when you're emotionally overwhelmed?",
+      options: ["Numb out (scroll, eat, sleep)", "Cry alone", "Get snappy with people", "Pretend I’m fine"],
+      scores: [1, 1, 1, 1],
+      types: ["Dreamer", "Giver", "Weightlifter", "Overthinker"],
+    },
+    {
+      question: "Which phrase hurts the most to hear?",
+      options: [
+        "You're too sensitive",
+        "You're lazy",
+        "You're too much",
+        "You should be stronger",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Giver", "Dreamer", "Overthinker", "Weightlifter"],
+    },
+    {
+      question: "If you could delete one feeling this week, what would it be?",
+      options: ["Pressure", "Loneliness", "Shame", "Hopelessness"],
+      scores: [1, 1, 1, 1],
+      types: ["Overthinker", "Giver", "Dreamer", "Weightlifter"],
+    },
+    {
+      question: "Where in your body do you feel stress the most?",
+      options: ["Head", "Chest", "Stomach", "Shoulders/neck"],
+      scores: [1, 1, 1, 1],
+      types: ["Overthinker", "Giver", "Dreamer", "Weightlifter"],
+    },
+    {
+      question: "If you were your own best friend, what would you say?",
+      options: [
+        "You’re allowed to rest.",
+        "You’re doing better than you think.",
+        "You matter, even if no one says it.",
+        "You don’t need to carry all of this alone.",
+      ],
+      scores: [1, 1, 1, 1],
+      types: ["Weightlifter", "Giver", "Dreamer", "Overthinker"],
+    },
+  ];
+
+  const gumroadLinks = {
+    Overthinker: "https://gumroad.com/l/overthinker-report",
+    Giver: "https://gumroad.com/l/giver-report",
+    Dreamer: "https://gumroad.com/l/dreamer-report",
+    Weightlifter: "https://gumroad.com/l/weightlifter-report",
+  };
+
+  let page = 0;
+  let selectedOption = null;
+  const scores = {
+    Overthinker: 0,
+    Giver: 0,
+    Dreamer: 0,
+    Weightlifter: 0,
+  };
+
+  const startScreen = document.getElementById("start-screen");
+  const questionScreen = document.getElementById("question-screen");
+  const finalScreen = document.getElementById("final-screen");
+  const questionText = document.getElementById("question-text");
+  const optionsContainer = document.getElementById("options-container");
+  const nextBtn = document.getElementById("next-btn");
+  const backBtn = document.getElementById("back-btn");
+  const finalMessage = document.getElementById("final-message");
+  const getResultsBtn = document.getElementById("get-results-btn");
+
+  document.getElementById("start-btn").addEventListener("click", () => {
+    startScreen.style.display = "none";
+    questionScreen.style.display = "block";
+    renderQuestion();
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if (selectedOption === null) return;
+    const q = questions[page];
+    const type = q.types[selectedOption];
+    if (scores.hasOwnProperty(type)) {
+      scores[type] += q.scores[selectedOption];
+    }
+
+    page++;
+    selectedOption = null;
+    nextBtn.disabled = true;
+
+    if (page === questions.length) {
+      questionScreen.style.display = "none";
+      renderFinal();
+      finalScreen.style.display = "block";
+    } else {
+      renderQuestion();
+    }
+  });
+
+  backBtn.addEventListener("click", () => {
+    if (page === 0) return;
+
+    const prevQ = questions[page - 1];
+    if (selectedOption !== null) {
+      const prevType = prevQ.types[selectedOption];
+      if (scores.hasOwnProperty(prevType)) {
+        scores[prevType] -= prevQ.scores[selectedOption];
+      }
+    }
+
+    page--;
+    selectedOption = null;
+    nextBtn.disabled = true;
+    renderQuestion();
+  });
+
+  function renderQuestion() {
+    const q = questions[page];
+    questionText.textContent = q.question;
+    optionsContainer.innerHTML = "";
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.className = "btn btn-option";
+      btn.addEventListener("click", () => {
+        selectedOption = idx;
+        nextBtn.disabled = false;
+        Array.from(optionsContainer.children).forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+      optionsContainer.appendChild(btn);
+    });
+    backBtn.disabled = page === 0;
+  }
+
+  function renderFinal() {
+    const maxScore = Math.max(...Object.values(scores));
+    const dominantTypes = Object.keys(scores).filter((type) => scores[type] === maxScore);
+    const dominantType = dominantTypes[0];
+
+    finalMessage.innerHTML =
+      "💬 We’ve analyzed your answers and matched your energy drain profile.\n\n" +
+      "📥 Tap below to unlock your personalized PDF report for<b> only $10</b> via gumroad.\n\n" +
+      "(Your custom 5-page report includes career tips, strengths, and how others see you)";
+      
+    getResultsBtn.onclick = () => {
+      const redirectUrl = gumroadLinks[dominantType] || "https://gumroad.com/l/default-report";
+      window.open(redirectUrl, "_blank");
+    };
+  }
+</script>
+</body>
+</html>
